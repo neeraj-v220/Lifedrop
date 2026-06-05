@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Status - LifeDrop</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="header">
+        <h1>LifeDrop</h1>
+        <p>Update Your Availability Status.</p>
+    </div>
+
+    <div class="card">
+        <h2 class="card-title">Manage Your Profile</h2>
+        <form id="manageForm">
+            <div class="form-group">
+                <label for="managePhone">Phone Number</label>
+                <input type="tel" id="managePhone" placeholder="+91 9876543210" required>
+            </div>
+            <button type="submit" class="btn">
+                <i class="fas fa-search" style="margin-right: 8px;"></i> Find My Profile
+            </button>
+            <div id="manageMessage" class="message"></div>
+        </form>
+
+        <div id="profileContainer" style="display: none; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1);">
+            <div class="donor-info">
+                <h3 id="profileName" style="color: var(--primary);"></h3>
+                <p id="profileLocation" style="margin-bottom: 0.5rem; color: var(--text-muted);"></p>
+                <p>Status: <strong id="profileStatus"></strong></p>
+                <button id="toggleStatusBtn" class="btn" style="margin-top: 1.5rem; transition: all 0.3s ease;">
+                    <i class="fas fa-spinner" style="margin-right: 8px;"></i> Loading...
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="nav-links">
+        <a href="index.html" class="nav-link"><i class="fas fa-home"></i> Home</a>
+        <a href="register.html" class="nav-link"><i class="fas fa-user-plus"></i> Register</a>
+        <a href="search.html" class="nav-link"><i class="fas fa-search"></i> Search Donors</a>
+        <a href="request.html" class="nav-link"><i class="fas fa-hospital-user"></i> Request Blood</a>
+    </div>
+
+    <footer style="text-align: center; margin-top: 2rem; color: var(--text-muted); font-size: 0.9em; padding-bottom: 2rem;">
+        <p><strong>Disclaimer:</strong> LifeDrop is not a medical authority. Always consult a hospital or certified medical professional before donating or receiving blood. LifeDrop only connects donors and recipients.</p>
+        <p style="margin-top: 1rem;">
+            <a href="privacy-policy.html" style="color: var(--primary); text-decoration: none; margin: 0 10px;">Privacy Policy</a> | 
+            <a href="terms.html" style="color: var(--primary); text-decoration: none; margin: 0 10px;">Terms & Conditions</a>
+        </p>
+        <p style="margin-top: 0.5rem;">LifeDrop © 2026. Helping people find blood donors faster.</p>
+    </footer>
+
+    <script src="app.js"></script>
+    <script>
+        const manageForm = document.getElementById('manageForm');
+        let currentDonorId = null;
+
+        manageForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const phone = encodeURIComponent(document.getElementById('managePhone').value);
+            
+            try {
+                const btn = manageForm.querySelector('button');
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Searching...';
+                btn.disabled = true;
+
+                const response = await fetch(`${API_BASE}/donor/phone/${phone}`);
+                
+                if (response.ok) {
+                    const donor = await response.json();
+                    document.getElementById('profileContainer').style.display = 'block';
+                    document.getElementById('profileName').textContent = donor.name;
+                    document.getElementById('profileLocation').textContent = `${donor.city}, ${donor.district}, ${donor.state}`;
+                    updateStatusDisplay(donor.available);
+                    currentDonorId = donor._id;
+                    showMessage('manageMessage', 'Profile found!');
+                } else {
+                    document.getElementById('profileContainer').style.display = 'none';
+                    showMessage('manageMessage', 'Donor not found with this phone number.', true);
+                }
+            } catch (err) {
+                showMessage('manageMessage', 'Network error.', true);
+            } finally {
+                const btn = manageForm.querySelector('button');
+                btn.innerHTML = '<i class="fas fa-search" style="margin-right: 8px;"></i> Find My Profile';
+                btn.disabled = false;
+            }
+        });
+
+        document.getElementById('toggleStatusBtn').addEventListener('click', async () => {
+            if (!currentDonorId) return;
+            try {
+                const btn = document.getElementById('toggleStatusBtn');
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
+
+                const response = await fetch(`${API_BASE}/donor/${currentDonorId}/availability`, {
+                    method: 'PUT'
+                });
+                if (response.ok) {
+                    const updated = await response.json();
+                    updateStatusDisplay(updated.donor.available);
+                    showMessage('manageMessage', 'Availability updated successfully!');
+                } else {
+                    alert('Error updating status');
+                    // Reset to original if failed
+                    updateStatusDisplay(!document.getElementById('profileStatus').textContent.includes('Available')); 
+                }
+            } catch(e) {
+                alert('Network error');
+            } finally {
+                const btn = document.getElementById('toggleStatusBtn');
+                btn.disabled = false;
+            }
+        });
+
+        function updateStatusDisplay(isAvailable) {
+            const statusEl = document.getElementById('profileStatus');
+            const btn = document.getElementById('toggleStatusBtn');
+            if (isAvailable) {
+                statusEl.textContent = 'Available to Donate';
+                statusEl.style.color = 'var(--success)';
+                btn.style.background = '#ef4444'; // Red to mark unavailable
+                btn.innerHTML = '<i class="fas fa-times-circle" style="margin-right: 8px;"></i> Withdraw as Donor';
+            } else {
+                statusEl.textContent = 'Currently Withdrawn';
+                statusEl.style.color = '#ef4444'; 
+                btn.style.background = 'var(--success)'; // Green to mark available
+                btn.innerHTML = '<i class="fas fa-check-circle" style="margin-right: 8px;"></i> Reactivate Donor Status';
+            }
+        }
+    </script>
+</body>
+</html>

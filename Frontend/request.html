@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Request - LifeDrop</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="header">
+        <h1>LifeDrop</h1>
+        <p>Urgent Blood Requirements.</p>
+    </div>
+
+    <div class="card">
+        <h2 class="card-title">Submit a Blood Request</h2>
+        <form id="requestForm">
+            <div class="form-group">
+                <label for="patientName">Patient Name</label>
+                <input type="text" id="patientName" placeholder="Jane Doe" required>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="reqBloodGroup">Required Blood Group</label>
+                    <select id="reqBloodGroup" required>
+                        <option value="" disabled selected>Select Group</option>
+                        <option value="A+">A+</option>
+                        <option value="A-">A-</option>
+                        <option value="B+">B+</option>
+                        <option value="B-">B-</option>
+                        <option value="AB+">AB+</option>
+                        <option value="AB-">AB-</option>
+                        <option value="O+">O+</option>
+                        <option value="O-">O-</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="reqPhone">Contact Phone</label>
+                    <input type="tel" id="reqPhone" placeholder="+1 (555) 000-0000" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="reqState">State</label>
+                    <select id="reqState" required>
+                        <option value="" disabled selected>Select State</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="reqDistrict">District</label>
+                    <select id="reqDistrict" required disabled>
+                        <option value="" disabled selected>Select District</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="reqCity">City</label>
+                    <input type="text" id="reqCity" placeholder="Enter City" required>
+                </div>
+                <div class="form-group">
+                    <label for="hospital">Hospital Name</label>
+                    <input type="text" id="hospital" placeholder="City General Hospital" required>
+                </div>
+            </div>
+
+            <button type="submit" class="btn">
+                <i class="fas fa-paper-plane" style="margin-right: 8px;"></i> Submit Request
+            </button>
+            <div id="requestMessage" class="message"></div>
+        </form>
+
+        <!-- Success Message Block (Hidden initially) -->
+        <div id="requestSuccessBlock" style="display: none; text-align: center; padding: 2rem 0;">
+            <i class="fas fa-check-circle" style="font-size: 4rem; color: var(--success); margin-bottom: 1rem;"></i>
+            <h2 style="color: var(--success); margin-bottom: 0.5rem;">Request Submitted!</h2>
+            <p style="color: var(--text-muted); margin-bottom: 2rem;">Your blood request has been broadcasted. Verified donors in the location will be informed.</p>
+            <button onclick="window.location.reload()" class="btn" style="width: auto; padding: 0.8rem 2rem;">Submit Another Request</button>
+        </div>
+    </div>
+
+    <div class="nav-links">
+        <a href="index.html" class="nav-link"><i class="fas fa-home"></i> Home</a>
+        <a href="register.html" class="nav-link"><i class="fas fa-user-plus"></i> Register</a>
+        <a href="search.html" class="nav-link"><i class="fas fa-search"></i> Search Donors</a>
+        <a href="manage.html" class="nav-link"><i class="fas fa-user-cog"></i> Manage Status</a>
+    </div>
+
+    <footer style="text-align: center; margin-top: 2rem; color: var(--text-muted); font-size: 0.9em; padding-bottom: 2rem;">
+        <p><strong>Disclaimer:</strong> LifeDrop is not a medical authority. Always consult a hospital or certified medical professional before donating or receiving blood. LifeDrop only connects donors and recipients.</p>
+        <p style="margin-top: 1rem;">
+            <a href="privacy-policy.html" style="color: var(--primary); text-decoration: none; margin: 0 10px;">Privacy Policy</a> | 
+            <a href="terms.html" style="color: var(--primary); text-decoration: none; margin: 0 10px;">Terms & Conditions</a>
+        </p>
+        <p style="margin-top: 0.5rem;">LifeDrop © 2026. Helping people find blood donors faster.</p>
+    </footer>
+
+    <script src="locations.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>

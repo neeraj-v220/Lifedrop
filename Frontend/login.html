@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LifeDrop - Login</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="header">
+        <h1>LifeDrop</h1>
+        <p>Connecting Lifesavers, Instantly.</p>
+    </div>
+
+    <div class="card">
+        <h2 class="card-title">Welcome Back</h2>
+        
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" required placeholder="Enter your email">
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" required placeholder="Enter your password">
+            </div>
+
+            <button type="submit" class="btn">
+                <i class="fas fa-sign-in-alt"></i> Login
+            </button>
+        </form>
+
+        <div id="responseMessage" class="message"></div>
+
+        <p style="text-align: center; margin-top: 1.5rem; color: var(--text-muted); font-size: 0.9em;">
+            Don't have an account? <a href="signup.html" style="color: var(--primary); text-decoration: none; font-weight: 600;">Sign up here</a>
+        </p>
+
+        <footer style="text-align: center; margin-top: 2rem; color: var(--text-muted); font-size: 0.8em; padding-top: 1rem; border-top: 1px solid var(--card-border);">
+            <p>LifeDrop © 2026.</p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
