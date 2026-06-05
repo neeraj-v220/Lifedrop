@@ -15,6 +15,16 @@ const donorRoutes = require("./routes/donorRoutes");
 const userAuthRoutes = require("./routes/userAuthRoutes");
 
 const app = express();
+app.get("/", (req, res) => {
+  res.send("ROOT WORKING");
+});
+
+app.get("/health", (req, res) => {
+  res.json({
+    status: "ok",
+    time: new Date()
+  });
+});
 
 
 // ✅ CORS (safe for now)
