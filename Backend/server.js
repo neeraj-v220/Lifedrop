@@ -96,6 +96,9 @@ if (errorMiddleware) {
 // ✅ Start server
 const PORT = process.env.PORT || 5000;
 
+app.get("/", (req, res) => {
+    res.send("🚀 LifeDrop Backend is Running Successfully");
+});
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
