@@ -15,7 +15,6 @@ const donorRoutes = require("./routes/donorRoutes");
 const userAuthRoutes = require("./routes/userAuthRoutes");
 
 const app = express();
-console.log("🔥 NEW SERVER FILE LOADED");
 app.get("/", (req, res) => {
   res.send("ROOT WORKING");
 });
