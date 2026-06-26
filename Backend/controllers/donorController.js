@@ -115,7 +115,13 @@ exports.searchDonors = async (req, res, next) => {
   try {
     const { bloodGroup, state, district, city, lat, lng, distance = 10000 } = req.query;
 
-    const query = { available: true, isVerified: true };
+    const query = {
+    available: true,
+    $or: [
+        { isVerified: true },
+        { isVerified: { $exists: false } }
+    ]
+};
     if (bloodGroup) query.bloodGroup = bloodGroup;
     if (state) query.state = new RegExp(`^${state}$`, 'i');
     if (district) query.district = new RegExp(`^${district}$`, 'i');
