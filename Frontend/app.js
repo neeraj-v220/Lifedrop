@@ -1,4 +1,7 @@
-const API_BASE = "https://lifedrop-backend-6km9.onrender.com/api";
+const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:')
+    ? 'http://localhost:5000/api'
+    : 'https://lifedrop-backend-6km9.onrender.com/api';
+
 // Helper to show messages
 function showMessage(elementId, text, isError = false) {
     const el = document.getElementById(elementId);
