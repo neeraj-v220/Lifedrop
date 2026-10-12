@@ -3,8 +3,28 @@ const path = require("path");
 const Donor = require("../models/Donor");
 const { isEligible } = require("../utils/eligibilityHelper");
 const { ErrorHandler } = require("../utils/errorHandler");
+const { getStoredSheetDonors, fetchGoogleSheetData } = require("../services/googleSheetService");
+
+// Trigger background sync on module load
+fetchGoogleSheetData().catch(() => {});
 
 const officialDonorsPath = path.join(__dirname, '..', 'data', 'official_donors.json');
+
+
+const cleanPhone = (phone) => {
+  if (!phone) return "";
+  return String(phone).replace(/\D/g, "");
+};
+
+const phoneMatches = (p1, p2) => {
+  const clean1 = cleanPhone(p1);
+  const clean2 = cleanPhone(p2);
+  if (clean1.length >= 10 && clean2.length >= 10) {
+    return clean1.slice(-10) === clean2.slice(-10);
+  }
+  return clean1 === clean2;
+};
+
 
 exports.registerDonor = async (req, res, next) => {
   try {
@@ -43,7 +63,8 @@ exports.registerDonor = async (req, res, next) => {
     };
 
     // Manual check for existing phone number to overcome any MongoDB index failures
-    const existingDonor = await Donor.findOne({ phone: phone });
+    const allDonorsList = await Donor.find({});
+    const existingDonor = allDonorsList.find(d => phoneMatches(d.phone, phone));
     if (existingDonor) {
       return next(new ErrorHandler("Donor with this phone number is already exist", 400));
     }
@@ -73,8 +94,10 @@ exports.registerDonor = async (req, res, next) => {
 
 exports.getDonorByPhone = async (req, res, next) => {
   try {
-    // Only return verified donors
-    const donor = await Donor.findOne({ phone: req.params.phone, isVerified: true });
+    const inputPhone = req.params.phone;
+    // Find all verified donors and match phone using phoneMatches helper:
+    const donors = await Donor.find({ isVerified: true });
+    const donor = donors.find(d => phoneMatches(d.phone, inputPhone));
     if (!donor) {
       return res.status(404).json({ message: "Donor not found" });
     }
@@ -124,8 +147,14 @@ exports.searchDonors = async (req, res, next) => {
 };
     if (bloodGroup) query.bloodGroup = bloodGroup;
     if (state) query.state = new RegExp(`^${state}$`, 'i');
-    if (district) query.district = new RegExp(`^${district}$`, 'i');
-    if (city) query.city = new RegExp(`^${city}$`, 'i');
+    if (district) {
+      if (district.toLowerCase() === 'trivandrum' || district.toLowerCase() === 'thiruvananthapuram') {
+        query.district = new RegExp('^(trivandrum|thiruvananthapuram)$', 'i');
+      } else {
+        query.district = new RegExp(`^${district}$`, 'i');
+      }
+    }
+    if (city) query.city = new RegExp(city, 'i');
 
     // Geospatial support if lat/lng are provided
     if (lat && lng) {
@@ -140,7 +169,54 @@ exports.searchDonors = async (req, res, next) => {
       };
     }
 
-    const dbDonors = await Donor.find(query).select('-createdAt -updatedAt -__v -isVerified -consent').lean();
+    let dbDonors = [];
+    try {
+      dbDonors = await Donor.find(query).select('-createdAt -updatedAt -__v -isVerified -consent').lean();
+    } catch (dbErr) {
+      console.warn("MongoDB query failed, falling back to in-memory filtering:", dbErr.message);
+      let allDb = [];
+      try {
+        allDb = await Donor.find({}).lean();
+      } catch (fallbackErr) {
+        console.error("Fallback query failed:", fallbackErr.message);
+      }
+
+      dbDonors = allDb.filter(d => {
+        if (d.available === false) return false;
+        
+        // Match blood group
+        if (bloodGroup && d.bloodGroup !== bloodGroup) return false;
+
+        // Match state
+        if (state) {
+          if (!d.state) return false;
+          const re = new RegExp(`^${state}$`, 'i');
+          if (!re.test(d.state)) return false;
+        }
+
+        // Match district
+        if (district) {
+          if (!d.district) return false;
+          const dLower = district.toLowerCase();
+          const distL = d.district.toLowerCase();
+          if (dLower === 'trivandrum' || dLower === 'thiruvananthapuram') {
+            if (distL !== 'trivandrum' && distL !== 'thiruvananthapuram') return false;
+          } else {
+            const re = new RegExp(`^${district}$`, 'i');
+            if (!re.test(d.district)) return false;
+          }
+        }
+
+        // Match city
+        if (city) {
+          if (!d.city) return false;
+          const re = new RegExp(city, 'i');
+          if (!re.test(d.city)) return false;
+        }
+
+        return true;
+      });
+    }
 
     let officialDonors = [];
     try {
@@ -151,8 +227,18 @@ exports.searchDonors = async (req, res, next) => {
         parsed = parsed.filter(d => d.available === true);
         if (bloodGroup) parsed = parsed.filter(d => d.bloodGroup === bloodGroup);
         if (state) parsed = parsed.filter(d => d.state && d.state.toLowerCase() === state.toLowerCase());
-        if (district) parsed = parsed.filter(d => d.district && d.district.toLowerCase() === district.toLowerCase());
-        if (city) parsed = parsed.filter(d => d.city && d.city.toLowerCase() === city.toLowerCase());
+        if (district) {
+          const dLower = district.toLowerCase();
+          parsed = parsed.filter(d => {
+            if (!d.district) return false;
+            const distL = d.district.toLowerCase();
+            if (dLower === 'trivandrum' || dLower === 'thiruvananthapuram') {
+              return distL === 'trivandrum' || distL === 'thiruvananthapuram';
+            }
+            return distL === dLower;
+          });
+        }
+        if (city) parsed = parsed.filter(d => d.city && d.city.toLowerCase().includes(city.toLowerCase()));
 
         // Mark as official
         parsed = parsed.map(d => ({ ...d, isOfficial: true }));
@@ -162,7 +248,33 @@ exports.searchDonors = async (req, res, next) => {
       console.error("Error reading official donors JSON:", err);
     }
 
-    const allDonors = [...dbDonors, ...officialDonors];
+    let sheetDonors = [];
+    try {
+      let rawSheet = getStoredSheetDonors();
+      if (rawSheet && rawSheet.length > 0) {
+        rawSheet = rawSheet.filter(d => d.available !== false);
+        if (bloodGroup) rawSheet = rawSheet.filter(d => d.bloodGroup === bloodGroup);
+        if (state) rawSheet = rawSheet.filter(d => d.state && d.state.toLowerCase() === state.toLowerCase());
+        if (district) {
+          const dLower = district.toLowerCase();
+          rawSheet = rawSheet.filter(d => {
+            if (!d.district) return false;
+            const distL = d.district.toLowerCase();
+            if (dLower === 'trivandrum' || dLower === 'thiruvananthapuram') {
+              return distL === 'trivandrum' || distL === 'thiruvananthapuram';
+            }
+            return distL === dLower;
+          });
+        }
+        if (city) rawSheet = rawSheet.filter(d => d.city && d.city.toLowerCase().includes(city.toLowerCase()));
+        sheetDonors = rawSheet.map(d => ({ ...d, isOfficial: true }));
+      }
+    } catch (err) {
+      console.error("Error processing sheet donors:", err);
+    }
+
+    const allDonors = [...dbDonors, ...officialDonors, ...sheetDonors];
+
     const uniqueDonors = [];
     const seenPhones = new Set();
     const seenNameCity = new Set();
