@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const makeHybridModel = require("./hybridModel");
 
 const donorSchema = new mongoose.Schema({
   name: {
@@ -56,4 +57,6 @@ const donorSchema = new mongoose.Schema({
 
 donorSchema.index({ location: '2dsphere' });
 
-module.exports = mongoose.model("Donor", donorSchema);
+const MongooseDonor = mongoose.model("Donor", donorSchema);
+module.exports = makeHybridModel("Donor", MongooseDonor);
+
