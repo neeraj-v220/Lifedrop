@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const makeHybridModel = require("./hybridModel");
 
 const requestSchema = new mongoose.Schema({
   patientName: {
@@ -33,4 +34,6 @@ const requestSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
-module.exports = mongoose.model("Request", requestSchema);
+const MongooseRequest = mongoose.model("Request", requestSchema);
+module.exports = makeHybridModel("Request", MongooseRequest);
+

@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const makeHybridModel = require('./hybridModel');
 
 const userSchema = new mongoose.Schema({
     name: {
@@ -20,4 +21,6 @@ const userSchema = new mongoose.Schema({
     }
 }, { timestamps: true });
 
-module.exports = mongoose.model('User', userSchema);
+const MongooseUser = mongoose.model('User', userSchema);
+module.exports = makeHybridModel('User', MongooseUser);
+
