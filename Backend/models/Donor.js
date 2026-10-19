@@ -30,6 +30,11 @@ const donorSchema = new mongoose.Schema({
   lastDonationDate: {
     type: Date
   },
+  donationExperience: {
+    type: String,
+    enum: ["first-time", "returning"],
+    default: "first-time"
+  },
   available: {
     type: Boolean,
     default: true
@@ -59,4 +64,3 @@ donorSchema.index({ location: '2dsphere' });
 
 const MongooseDonor = mongoose.model("Donor", donorSchema);
 module.exports = makeHybridModel("Donor", MongooseDonor);
-

@@ -29,28 +29,20 @@
                 <input type="text" id="name" name="name" placeholder="John Doe" required>
             </div>
 
-            <!-- Blood + Phone -->
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="bloodGroup">Blood Group</label>
-                    <select id="bloodGroup" name="bloodGroup" required>
-                        <option value="" disabled selected>Select Group</option>
-                        <option value="A+">A+</option>
-                        <option value="A-">A-</option>
-                        <option value="B+">B+</option>
-                        <option value="B-">B-</option>
-                        <option value="AB+">AB+</option>
-                        <option value="AB-">AB-</option>
-                        <option value="O+">O+</option>
-                        <option value="O-">O-</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="phone">Phone Number</label>
-                    <input type="tel" id="phone" name="phone" placeholder="+91 9876543210" required>
-                    <button type="button" class="btn" id="sendOtpBtn" style="margin-top: 0.5rem; padding: 0.8rem;">Send OTP</button>
-                </div>
+            <!-- Blood Group -->
+            <div class="form-group">
+                <label for="bloodGroup">Blood Group</label>
+                <select id="bloodGroup" name="bloodGroup" required>
+                    <option value="" disabled selected>Select Group</option>
+                    <option value="A+">A+</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B-">B-</option>
+                    <option value="AB+">AB+</option>
+                    <option value="AB-">AB-</option>
+                    <option value="O+">O+</option>
+                    <option value="O-">O-</option>
+                </select>
             </div>
 
             <!-- State + District -->
@@ -70,7 +62,7 @@
                 </div>
             </div>
 
-            <!-- City + Date -->
+            <!-- City + Donation History -->
             <div class="form-row">
                 <div class="form-group">
                     <label for="city">City</label>
@@ -78,9 +70,18 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="lastDonationDate">Last Donation Date</label>
-                    <input type="date" id="lastDonationDate" name="lastDonationDate">
+                    <label for="donationExperience">Donation History</label>
+                    <select id="donationExperience" name="donationExperience" required>
+                        <option value="" disabled selected>Select an option</option>
+                        <option value="first-time">I am a new donor (I have never donated)</option>
+                        <option value="returning">I have donated before</option>
+                    </select>
                 </div>
+            </div>
+
+            <div class="form-group" id="lastDonationDateGroup" style="display: none;">
+                <label for="lastDonationDate">Last Donation Date</label>
+                <input type="date" id="lastDonationDate" name="lastDonationDate">
             </div>
 
             <!-- Location Data (Hidden) -->
@@ -97,13 +98,32 @@
                 </label>
             </div>
 
+            <!-- Phone Verification -->
+            <div class="form-group">
+                <label for="phone">Phone Number</label>
+                <input type="tel" id="phone" name="phone" placeholder="+91 9876543210" required>
+                <button type="button" class="btn" id="sendOtpBtn" style="margin-top: 0.5rem; padding: 0.8rem;">Send OTP</button>
+            </div>
+
+            <div id="otpSection" style="display: none; margin-top: 20px; border-top: 1px solid #eee; padding-top: 20px;">
+                <h3>Verify Phone Number</h3>
+                <p id="otpStatusMsg">An OTP has been processed for your phone number.</p>
+                <div class="form-group" style="margin-top: 10px;">
+                    <input type="text" id="otpInput" placeholder="Enter 6-digit OTP" maxlength="6" style="width: 100%; padding:10px;">
+                    <button type="button" class="btn" id="verifyOtpBtn" style="margin-top: 0.5rem; padding: 0.8rem;">
+                        <i class="fas fa-check-circle" style="margin-right: 8px;"></i> Verify
+                    </button>
+                </div>
+                <div id="otpErrorMsg" style="color:red; margin-top:5px; font-size:14px;"></div>
+            </div>
+
+            <div id="registerMessage" class="message"></div>
+
             <!-- Submit -->
             <button type="submit" class="btn" id="registerBtn" disabled style="opacity: 0.6; cursor: not-allowed;">
                 <i class="fas fa-lock" style="margin-right: 8px;"></i>
                 Verify Phone to Register
             </button>
-
-            <div id="registerMessage" class="message"></div>
 
         </form>
 
@@ -115,18 +135,6 @@
             <a href="search.html" class="btn" style="text-decoration: none; display: inline-block; width: auto; padding: 0.8rem 2rem;">Find Donors</a>
         </div>
 
-        <!-- OTP Section (Hidden initially) -->
-        <div id="otpSection" style="display: none; margin-top: 20px; border-top: 1px solid #eee; padding-top: 20px;">
-            <h3>Verify Phone Number</h3>
-            <p id="otpStatusMsg">An OTP has been processed for your phone number.</p>
-            <div class="form-group" style="margin-top: 10px;">
-                <input type="text" id="otpInput" placeholder="Enter 6-digit OTP" maxlength="6" style="width: 100%; padding:10px;">
-                <button type="button" class="btn" id="verifyOtpBtn" style="margin-top: 0.5rem; padding: 0.8rem;">
-                    <i class="fas fa-check-circle" style="margin-right: 8px;"></i> Verify
-                </button>
-            </div>
-            <div id="otpErrorMsg" style="color:red; margin-top:5px; font-size:14px;"></div>
-        </div>
     </div>
 
     <!-- Navigation -->

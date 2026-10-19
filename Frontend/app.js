@@ -74,11 +74,11 @@ const sendOtpBtn = document.getElementById("sendOtpBtn");
 const otpSection = document.getElementById("otpSection");
 const verifyOtpBtn = document.getElementById("verifyOtpBtn");
 const otpInput = document.getElementById("otpInput");
-const otpErrorMsg = document.getElementById("otpErrorMsg");
+const otpErrorMsg = document.getElementById("otpErrorMsg"); const donationExperienceInput = document.getElementById("donationExperience"); const lastDonationDateInput = document.getElementById("lastDonationDate"); const lastDonationDateGroup = document.getElementById("lastDonationDateGroup");
 
 if (registerForm) {
     let pendingDonorData = null;
-    let isPhoneVerified = false;
+    let isPhoneVerified = false; if (donationExperienceInput && lastDonationDateInput && lastDonationDateGroup) { const updateDonationDateVisibility = () => { const hasDonatedBefore = donationExperienceInput.value === "returning"; lastDonationDateGroup.style.display = hasDonatedBefore ? "" : "none"; lastDonationDateInput.required = hasDonatedBefore; if (!hasDonatedBefore) { lastDonationDateInput.value = ""; } }; donationExperienceInput.addEventListener("change", updateDonationDateVisibility); updateDonationDateVisibility(); }
 
     // 1. Send OTP logic decoupled from form!
     if(sendOtpBtn) {
@@ -108,7 +108,7 @@ if (registerForm) {
             }
 
             showMessage("registerMessage", "OTP generated successfully!", false);
-            otpSection.style.display = "block";
+            otpSection.style.display = "block"; otpInput.focus();
             sendOtpBtn.innerHTML = '<i class="fas fa-check"></i> Sent';
 
         } else {
@@ -116,7 +116,7 @@ if (registerForm) {
             alert(`Fallback OTP: ${dummyOtp}`);
             window.generatedFallbackOTP = dummyOtp;
 
-            otpSection.style.display = "block";
+            otpSection.style.display = "block"; otpInput.focus();
             showMessage("registerMessage", "Using fallback OTP system", false);
             sendOtpBtn.innerHTML = '<i class="fas fa-check"></i> Sent';
         }
@@ -227,7 +227,7 @@ if (registerForm) {
             state: registerForm.querySelector('select[name="state"]').value,
             district: registerForm.querySelector('input[name="district"]') ? registerForm.querySelector('input[name="district"]').value : registerForm.querySelector('select[name="district"]').value,
             city: registerForm.querySelector('input[name="city"]').value,
-            lastDonationDate: registerForm.querySelector('input[name="lastDonationDate"]').value,
+            donationExperience: donationExperienceInput.value, lastDonationDate: donationExperienceInput.value === "returning" ? lastDonationDateInput.value : "",
             location: { latitude: donorLat, longitude: donorLng },
             consent: consentCheckbox ? consentCheckbox.checked : false
         };
