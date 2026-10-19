@@ -28,7 +28,7 @@ const phoneMatches = (p1, p2) => {
 
 exports.registerDonor = async (req, res, next) => {
   try {
-    const { name, bloodGroup, phone, state, district, city, lastDonationDate, location, consent } = req.body;
+    const { name, bloodGroup, phone, state, district, city, lastDonationDate, donationExperience, location, consent } = req.body;
 
     if (!name || !bloodGroup || !phone || !state || !district || !city) {
       return next(new ErrorHandler("Please provide all required fields: Name, Blood Group, Phone, State, District, and City.", 400));
@@ -38,13 +38,13 @@ exports.registerDonor = async (req, res, next) => {
       return next(new ErrorHandler("User consent is required for registration.", 400));
     }
 
-    // Client must have verified OTP to reach here (for this integration scope)
+    const normalizedLastDonationDate = typeof lastDonationDate === "string" ? lastDonationDate.trim() : lastDonationDate; const hasLastDonationDate = normalizedLastDonationDate !== undefined && normalizedLastDonationDate !== null && normalizedLastDonationDate !== ""; const hasDonationExperience = donationExperience !== undefined && donationExperience !== null && donationExperience !== ""; const normalizedDonationExperience = hasDonationExperience ? donationExperience : (hasLastDonationDate ? "returning" : "first-time"); if (!["first-time", "returning"].includes(normalizedDonationExperience)) { return next(new ErrorHandler("Please select a valid donation history option.", 400)); } if (hasDonationExperience && normalizedDonationExperience === "returning" && !hasLastDonationDate) { return next(new ErrorHandler("Please provide your last donation date.", 400)); } if (normalizedDonationExperience === "first-time" && hasLastDonationDate) { return next(new ErrorHandler("A first-time donor cannot have a previous donation date.", 400)); }
     const isVerified = true;
 
     // Automatic availability logic based on 90-day medical constraint
     let available = true;
-    if (lastDonationDate) {
-      if (!isEligible(lastDonationDate)) {
+    if (normalizedDonationExperience === "returning" && hasLastDonationDate) {
+      if (!isEligible(normalizedLastDonationDate)) {
         available = false; // Override true because < 90 days
       }
     }
@@ -56,7 +56,7 @@ exports.registerDonor = async (req, res, next) => {
       state,
       district,
       city,
-      lastDonationDate,
+      lastDonationDate: hasLastDonationDate ? normalizedLastDonationDate : undefined, donationExperience: normalizedDonationExperience,
       available,
       isVerified,
       consent,
